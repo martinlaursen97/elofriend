@@ -40,7 +40,7 @@ def run():
                     await message.channel.send('You are already registered!')
 
             elif msg.startswith('!info '):
-                player_tag = search(r'!info(.*)', message.content)[1]
+                player_tag = search(r'!info(.*)', msg)[1]
                 player = get_player(tag_to_id(player_tag))
 
                 response = f'Info: {player_tag}\n'
@@ -72,7 +72,7 @@ def run():
                 await message.channel.send(response)
 
             elif msg.startswith('!2v2 '):
-                tags = search(r'!2v2(.*)', message.content)[1]
+                tags = search(r'!2v2(.*)', msg)[1]
 
                 try:
                     teams = await get_teams(tags, message, team_size=2)
@@ -82,7 +82,7 @@ def run():
                     return
 
             elif msg.startswith('!3v3 '):
-                tags = search(r'!3v3(.*)', message.content)[1]
+                tags = search(r'!3v3(.*)', msg)[1]
 
                 try:
                     teams = await get_teams(tags, message, team_size=3)
