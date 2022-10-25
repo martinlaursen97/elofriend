@@ -1,10 +1,12 @@
 from pydantic import BaseModel
 
 
-class Member(BaseModel):
-    id: int
+class MemberBase(BaseModel):
     discord_id: str
     server_id: str
+
+class Member(MemberBase):
+    id: int
     wins: int
     losses: int
     elo_2v2: int
@@ -12,4 +14,3 @@ class Member(BaseModel):
 
     class Config:
         orm_mode = True
-
