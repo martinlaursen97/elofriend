@@ -88,14 +88,6 @@ def run():
         else:
             await ctx.send('No registered players!')
 
-    def table_output(header, body):
-        output = t2a(
-            header=header,
-            body=body,
-            style=PresetStyle.thin_compact
-        )
-        return f"```\n{output}\n```"
-
     @bot.command()
     @is_channel()
     async def play(ctx, discord_members: commands.Greedy[discord.Member]):
@@ -125,7 +117,16 @@ def run():
 
         res = table_output(header, body)
 
+        await ctx.send('Elo change:')
         await ctx.send(res)
+
+    def table_output(header, body):
+        output = t2a(
+            header=header,
+            body=body,
+            style=PresetStyle.thin_compact
+        )
+        return f"```\n{output}\n```"
 
     bot.run(TOKEN)
 
