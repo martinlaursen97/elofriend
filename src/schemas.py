@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class MemberBase(BaseModel):
     discord_id: str
-    server_id: str
+
 
 class Member(MemberBase):
     id: int
@@ -14,3 +14,14 @@ class Member(MemberBase):
 
     class Config:
         orm_mode = True
+
+
+class ServerBase(BaseModel):
+    server_id: str
+
+
+class Server(ServerBase):
+    id: int
+
+class MemberItemBase(BaseModel):
+    pass

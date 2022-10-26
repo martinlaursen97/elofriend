@@ -12,3 +12,10 @@ class Member(Base):
     losses = Column(Integer, nullable=False, default=0)
     elo_2v2 = Column(Integer, nullable=False, default=1200)
     elo_3v3 = Column(Integer, nullable=False, default=1200)
+
+
+class Server(Base):
+    __tablename__ = 'servers'
+
+    id = Column(Integer, primary_key=True, index=True)
+    server_id = Column(String, unique=True, nullable=False)

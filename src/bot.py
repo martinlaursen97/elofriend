@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-from src.schemas import MemberBase
+from src.schemas import MemberBase, ServerBase
 from src.service import Service
 from src.database import engine, get_db
 from src.models import Base
@@ -34,21 +34,28 @@ def run():
     @is_channel()
     async def register(ctx):
         member = MemberBase(
-            discord_id=ctx.author.id,
+            discord_id=ctx.author.id
+        )
+
+        server = ServerBase(
             server_id=ctx.guild.id
         )
 
-        res = crud.create_member(member)
-        await ctx.send(res)
+        res_server = crud.create_server(server)
+        print(res_server)
+
+        res_member = Response(crud.create_member(member))
+        await ctx.send(res_member)
 
     @bot.command()
     @is_channel()
     async def info(ctx, discord_member: discord.Member):
         member = crud.get_member_by_discord_id(str(discord_member.id))
-        res = Response("asd", "ads", "cd", indexed=True)
-        print(res)
+        res = Response(f'2v2: {member.elo_2v2}',
+                       f'3v3: {member.elo_3v3}',
+                       f'win/loss: {member.wins}/{member.losses}')
 
-        # await ctx.send(member)
+        await ctx.send(res)
 
     @bot.command()
     @is_channel()
@@ -57,7 +64,8 @@ def run():
 
     @bot.command()
     @is_channel()
-    async def play(ctx, *args):
+    async def play(ctx, *discord_members: discord.Member):
+        print(discord_members)
         pass
 
     bot.run(TOKEN)
