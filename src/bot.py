@@ -27,6 +27,14 @@ def run():
 
     crud = Service(next(get_db()))
 
+    def table_output(header, body):
+        output = t2a(
+            header=header,
+            body=body,
+            style=PresetStyle.thin_compact
+        )
+        return f"```\n{output}\n```"
+
     def is_channel():
         async def predicate(ctx):
             return ctx.channel.name == CHANNEL
@@ -71,10 +79,17 @@ def run():
 
     @bot.command()
     @is_channel()
-    async def ladder(ctx):
+    async def ladder(ctx, arg):
         member_items = crud.get_member_items_by_server_id(ctx.guild.id)
+        if arg != '2v2' or arg != '3v3':
+            await ctx.send('Error: invalid argument')
+            return
+
         if member_items:
-            members = sorted(member_items, key=lambda t: t.elo_2v2, reverse=True)
+            if arg == '2v2':
+                members = sorted(member_items, key=lambda t: t.elo_2v2, reverse=True)
+            else:
+                members = sorted(member_items, key=lambda t: t.elo_3v3, reverse=True)
 
             header = ['Rank', 'Player', '2v2', '3v3', 'Wins', 'Losses']
             body = []
@@ -119,14 +134,6 @@ def run():
 
         await ctx.send('Elo change:')
         await ctx.send(res)
-
-    def table_output(header, body):
-        output = t2a(
-            header=header,
-            body=body,
-            style=PresetStyle.thin_compact
-        )
-        return f"```\n{output}\n```"
 
     bot.run(TOKEN)
 
