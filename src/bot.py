@@ -105,12 +105,12 @@ def run():
         body = [[]]
 
         if len(discord_members) == 4:
-            winners = [discord_members[0], discord_members[1]]
-            losers = [discord_members[2], discord_members[3]]
+            winners = discord_members[0:2]
+            losers = discord_members[2:]
             body = crud.adjust_elo(winners, losers, ctx.guild.id)
         elif len(discord_members) == 6:
-            winners = [discord_members[0], discord_members[1], discord_members[2]]
-            losers = [discord_members[3], discord_members[4], discord_members[5]]
+            winners = discord_members[:3]
+            losers = discord_members[3:]
             body = crud.adjust_elo(winners, losers, ctx.guild.id)
         else:
             await ctx.send(f'Error: Player count({len(discord_members)}) != 4 or 6')
