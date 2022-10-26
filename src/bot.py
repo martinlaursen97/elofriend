@@ -43,16 +43,12 @@ def run():
 
         member_item = MemberItemBase(member_id=member.id, server_id=server.id)
 
-        print(f'server id: {server.id}')
+        # Will only be created if they don't already exist
+        crud.create_server(server)
+        crud.create_member(member)
 
-        res_server = crud.create_server(server)
-        print(res_server)
-
-        res_member = Response(crud.create_member(member))
-        print(res_member)
-
-        res_created = crud.create_member_item(member_item)
-        await ctx.send(res_created)
+        res = Response(crud.create_member_item(member_item))
+        await ctx.send(res)
 
     @bot.command()
     @is_channel()

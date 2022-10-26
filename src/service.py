@@ -26,11 +26,8 @@ class Service:
 
     def create_member_item(self, member_item: schemas.MemberItemBase):
         db_member_item = models.MemberItem(**member_item.dict())
-        print(db_member_item.member_id)
-        print(db_member_item.server_id)
 
         if not self.member_item_exists_by_member_id_and_server_id(db_member_item.member_id, db_member_item.server_id):
-
             self.db.add(db_member_item)
             self.db.commit()
             return f'<@{db_member_item.member_id}> successfully registered!'
@@ -54,7 +51,6 @@ class Service:
         return self.get_server_by_id(id) is not None
 
     def member_item_exists_by_member_id_and_server_id(self, member_id: int, server_id: int):
-        print(self.get_member_item_by_member_id_and_server_id(member_id, server_id))
         return self.get_member_item_by_member_id_and_server_id(member_id, server_id) is not None
 
     def get_member_item_info(self, member_id: int, server_id):
