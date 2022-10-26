@@ -67,7 +67,7 @@ def run():
 
             await ctx.send(res)
         else:
-            await ctx.send(f'<@{discord_member.id}> is not registered!')
+            await ctx.send(f'Error: <@{discord_member.id}> is not registered!')
 
     @bot.command()
     @is_channel()
@@ -86,7 +86,7 @@ def run():
 
             await ctx.send(res)
         else:
-            await ctx.send('No registered players!')
+            await ctx.send('Error: No registered players!')
 
     @bot.command()
     @is_channel()

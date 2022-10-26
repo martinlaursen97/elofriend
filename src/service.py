@@ -32,7 +32,7 @@ class Service:
             self.db.commit()
             return f'<@{db_member_item.member_id}> successfully registered!'
         else:
-            return f'<@{db_member_item.member_id}> already registered!'
+            return f'Error: <@{db_member_item.member_id}> already registered!'
 
     def get_member_by_id(self, id: int):
         return self.db.query(models.Member).filter(models.Member.id == id).first()
