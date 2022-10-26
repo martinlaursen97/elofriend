@@ -43,6 +43,8 @@ def run():
 
         member_item = MemberItemBase(member_id=member.id, server_id=server.id)
 
+        print(f'server id: {server.id}')
+
         res_server = crud.create_server(server)
         print(res_server)
 
