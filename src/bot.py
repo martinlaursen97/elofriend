@@ -81,7 +81,8 @@ def run():
     @is_channel()
     async def ladder(ctx, arg):
         member_items = crud.get_member_items_by_server_id(ctx.guild.id)
-        if arg != '2v2' or arg != '3v3':
+        valid = ['2v2', '3v3']
+        if arg not in valid:
             await ctx.send('Error: invalid argument')
             return
 
