@@ -44,6 +44,9 @@ class Service:
         return self.db.query(models.MemberItem).filter(and_(models.MemberItem.member_id == member_id,
                                                             models.MemberItem.server_id == server_id)).first()
 
+    def get_member_items_by_server_id(self, server_id: int):
+        return self.db.query(models.MemberItem).filter(models.MemberItem.server_id == server_id).all()
+
     def member_exists_by_id(self, id: int):
         return self.get_member_by_id(id) is not None
 
