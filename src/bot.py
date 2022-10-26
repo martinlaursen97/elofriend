@@ -60,7 +60,8 @@ def run():
             member = crud.get_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
 
             header = ['Player', '2v2', '3v3', 'Wins', 'Losses']
-            body = [[await bot.fetch_user(member.member_id), member.elo_2v2, member.elo_3v3, member.wins, member.losses]]
+            body = [[await bot.fetch_user(member.member_id),
+                     member.elo_2v2, member.elo_3v3, member.wins, member.losses]]
 
             res = table_output(header, body)
 
@@ -97,9 +98,34 @@ def run():
 
     @bot.command()
     @is_channel()
-    async def play(ctx, *discord_members: discord.Member):
-        print(discord_members)
-        pass
+    async def play(ctx, discord_members: commands.Greedy[discord.Member]):
+        if len(discord_members) != len(set(discord_members)):
+            await ctx.send('Error: Duplicate found!')
+            return
+
+        # Check if members are registered
+        for i in discord_members:
+            if not crud.member_item_exists_by_member_id_and_server_id(i.id, ctx.guild.id):
+                await ctx.send(f'{i.mention} is not registered!')
+                return
+
+        header = [m.name for m in discord_members]
+        body = [[]]
+
+        if len(discord_members) == 4:
+            winners = [discord_members[0], discord_members[1]]
+            losers = [discord_members[2], discord_members[3]]
+            body = crud.adjust_elo(winners, losers, ctx.guild.id)
+        elif len(discord_members) == 6:
+            winners = [discord_members[0], discord_members[1], discord_members[2]]
+            losers = [discord_members[3], discord_members[4], discord_members[5]]
+            body = crud.adjust_elo(winners, losers, ctx.guild.id)
+        else:
+            await ctx.send(f'Error: Player count({len(discord_members)}) != 4 or 6')
+
+        res = table_output(header, body)
+
+        await ctx.send(res)
 
     bot.run(TOKEN)
 

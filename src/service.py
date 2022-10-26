@@ -61,3 +61,64 @@ class Service:
             return self.get_member_item_by_member_id_and_server_id(member_id, server_id)
         else:
             return None
+
+    def adjust_elo(self, winners, losers, server_id):
+        winners_avg_elo = self.get_avg_elo(winners, server_id)
+        losers_avg_elo = self.get_avg_elo(losers, server_id)
+
+        winners_win_prop = 1 / (1 + 10 ** ((losers_avg_elo - winners_avg_elo) / 400))
+        losers_win_prop = 1 / (1 + 10 ** ((winners_avg_elo - losers_avg_elo) / 400))
+
+        K = 16
+
+        elo_change = []
+
+        for w in winners:
+            member = self.get_member_item_by_member_id_and_server_id(w.id, server_id)
+            old_elo = 0
+            new_elo = 0
+
+            if len(winners) == 2:
+                old_elo = member.elo_2v2
+                new_elo = int(old_elo + K * (1 - winners_win_prop))
+                member.elo_2v2 = new_elo
+
+            elif len(winners) == 3:
+                old_elo = member.elo_3v3
+                new_elo = int(old_elo + K * (1 - winners_win_prop))
+                member.elo_3v3 = new_elo
+
+            elo_change.append(f'{old_elo}>{new_elo}')
+
+            self.db.commit()
+
+        for l in losers:
+            member = self.get_member_item_by_member_id_and_server_id(l.id, server_id)
+            old_elo = 0
+            new_elo = 0
+
+            if len(winners) == 2:
+                old_elo = member.elo_2v2
+                new_elo = int(old_elo + K * (0 - losers_win_prop))
+                member.elo_2v2 = new_elo
+
+            elif len(winners) == 3:
+                old_elo = member.elo_3v3
+                new_elo = int(old_elo + K * (0 - losers_win_prop))
+                member.elo_3v3 = new_elo
+
+            elo_change.append(f'{old_elo}>{new_elo}')
+
+            self.db.commit()
+
+        return [elo_change]
+
+    def get_avg_elo(self, team, server_id):
+        sum = 0
+        for i in team:
+            item = self.get_member_item_by_member_id_and_server_id(i.id, server_id)
+            if len(team) == 2:
+                sum += item.elo_2v2
+            elif len(team) == 3:
+                sum += item.elo_3v3
+        return sum / len(team)
