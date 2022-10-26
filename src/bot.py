@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-from src.schemas import MemberBase, ServerBase
+from src.schemas import MemberBase, ServerBase, MemberItemBase
 from src.service import Service
 from src.database import engine, get_db
 from src.models import Base
@@ -34,28 +34,36 @@ def run():
     @is_channel()
     async def register(ctx):
         member = MemberBase(
-            discord_id=ctx.author.id
+            id=ctx.author.id
         )
 
         server = ServerBase(
-            server_id=ctx.guild.id
+            id=ctx.guild.id
         )
+
+        member_item = MemberItemBase(member_id=member.id, server_id=server.id)
 
         res_server = crud.create_server(server)
         print(res_server)
 
         res_member = Response(crud.create_member(member))
-        await ctx.send(res_member)
+        print(res_member)
+
+        res_created = crud.create_member_item(member_item)
+        await ctx.send(res_created)
 
     @bot.command()
     @is_channel()
     async def info(ctx, discord_member: discord.Member):
-        member = crud.get_member_by_discord_id(str(discord_member.id))
-        res = Response(f'2v2: {member.elo_2v2}',
-                       f'3v3: {member.elo_3v3}',
-                       f'win/loss: {member.wins}/{member.losses}')
+        if crud.get_member_item_info(discord_member.id, ctx.guild.id):
+            member = crud.get_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
+            res = Response(f'2v2: {member.elo_2v2}',
+                           f'3v3: {member.elo_3v3}',
+                           f'win/loss: {member.wins}/{member.losses}')
 
-        await ctx.send(res)
+            await ctx.send(res)
+        else:
+            await ctx.send(Response(f'<@{discord_member.id}> is not registered!'))
 
     @bot.command()
     @is_channel()

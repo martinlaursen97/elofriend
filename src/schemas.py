@@ -2,10 +2,33 @@ from pydantic import BaseModel
 
 
 class MemberBase(BaseModel):
-    discord_id: str
+    id: int
 
 
 class Member(MemberBase):
+    items: list
+
+    class Config:
+        orm_mode = True
+
+
+class ServerBase(BaseModel):
+    id: int
+
+
+class Server(ServerBase):
+    items: list
+
+    class Config:
+        orm_mode = True
+
+
+class MemberItemBase(BaseModel):
+    member_id: int
+    server_id: int
+
+
+class MemberItem(MemberItemBase):
     id: int
     wins: int
     losses: int
@@ -14,14 +37,3 @@ class Member(MemberBase):
 
     class Config:
         orm_mode = True
-
-
-class ServerBase(BaseModel):
-    server_id: str
-
-
-class Server(ServerBase):
-    id: int
-
-class MemberItemBase(BaseModel):
-    pass
