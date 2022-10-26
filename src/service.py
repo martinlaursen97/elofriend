@@ -88,6 +88,7 @@ class Service:
                 new_elo = int(old_elo + K * (1 - winners_win_prop))
                 member.elo_3v3 = new_elo
 
+            member.wins += 1
             elo_change.append(f'{old_elo}>{new_elo}')
 
             self.db.commit()
@@ -107,6 +108,7 @@ class Service:
                 new_elo = int(old_elo + K * (0 - losers_win_prop))
                 member.elo_3v3 = new_elo
 
+            member.losses += 1
             elo_change.append(f'{old_elo}>{new_elo}')
 
             self.db.commit()
