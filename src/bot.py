@@ -65,7 +65,7 @@ def run():
     @bot.command()
     @is_channel()
     async def info(ctx, discord_member: discord.Member):
-        if crud.get_member_item_info(discord_member.id, ctx.guild.id):
+        if crud.member_item_exists_by_member_id_and_server_id(discord_member.id, ctx.guild.id):
             member = crud.get_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
 
             header = ['Player', '2v2', '3v3', 'Wins', 'Losses']

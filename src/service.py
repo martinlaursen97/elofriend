@@ -58,12 +58,6 @@ class Service:
     def member_item_exists_by_member_id_and_server_id(self, member_id: int, server_id: int):
         return self.get_member_item_by_member_id_and_server_id(member_id, server_id) is not None
 
-    def get_member_item_info(self, member_id: int, server_id):
-        if self.member_item_exists_by_member_id_and_server_id(member_id, server_id):
-            return self.get_member_item_by_member_id_and_server_id(member_id, server_id)
-        else:
-            return None
-
     def adjust_elo(self, winners, losers, server_id):
         winners_avg_elo = self.get_avg_elo(winners, server_id)
         losers_avg_elo = self.get_avg_elo(losers, server_id)
