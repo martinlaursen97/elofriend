@@ -141,12 +141,9 @@ def run():
     async def reset(ctx, discord_member: discord.Member):
         if ctx.author.guild_permissions.administrator:
             crud.reset_elo_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
+            ctx.send('Player has been reset!')
         else:
             ctx.send('Error: You have to be admin to use this command!')
-        print(ctx.author.guild_permissions.administrator)
-        print(discord_member)
-
-        pass
 
     bot.run(TOKEN)
 
