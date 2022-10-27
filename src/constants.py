@@ -1,7 +1,12 @@
-from enum import Enum
+from enum import IntEnum
 
 
-class StartConfig(Enum):
+class StartConfig(IntEnum):
     STARTING_ELO = 1200
     STARTING_WINS = 0
     STARTING_LOSSES = 0
+
+
+class PlayerAmount(IntEnum):
+    TWO_VS_TWO = 4
+    THREE_VS_THREE = 6

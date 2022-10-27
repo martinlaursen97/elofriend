@@ -128,9 +128,9 @@ class Service:
 
     def reset_elo_by_member_id_and_server_id(self, member_id, server_id):
         member_item = self.get_member_item_by_member_id_and_server_id(member_id, server_id)
-        member_item.elo_2v2 = StartConfig.STARTING_ELO.value
-        member_item.elo_3v3 = StartConfig.STARTING_ELO.value
-        member_item.wins = StartConfig.STARTING_WINS.value
-        member_item.losses = StartConfig.STARTING_LOSSES.value
+        member_item.elo_2v2 = StartConfig.STARTING_ELO
+        member_item.elo_3v3 = StartConfig.STARTING_ELO
+        member_item.wins = StartConfig.STARTING_WINS
+        member_item.losses = StartConfig.STARTING_LOSSES
         self.db.commit()
 

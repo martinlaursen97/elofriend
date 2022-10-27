@@ -7,6 +7,7 @@ from src.schemas import MemberBase, ServerBase, MemberItemBase
 from src.service import Service
 from src.database import engine, get_db
 from src.models import Base
+from src.constants import PlayerAmount
 
 from table2ascii import table2ascii as t2a, PresetStyle
 
@@ -107,8 +108,16 @@ def run():
     @bot.command()
     @is_channel()
     async def play(ctx, discord_members: commands.Greedy[discord.Member]):
-        if len(discord_members) != len(set(discord_members)):
+        player_amount = len(discord_members)
+
+        if player_amount != len(set(discord_members)):
             await ctx.send('Error: Duplicate found!')
+            return
+
+        valid_lengths = [PlayerAmount.TWO_VS_TWO, PlayerAmount.THREE_VS_THREE]
+        if player_amount not in valid_lengths:
+            await ctx.send(f'Error: Invalid played amount ({player_amount}). '
+                           f'Valid amounts are: {[i.value for i in valid_lengths]}')
             return
 
         # Check if members are registered
@@ -117,19 +126,11 @@ def run():
                 await ctx.send(f'{i.mention} is not registered!')
                 return
 
-        header = [m.name for m in discord_members]
-        body = [[]]
+        winners = discord_members[:int(player_amount / 2)]
+        losers = discord_members[int(player_amount / 2):]
 
-        if len(discord_members) == 4:
-            winners = discord_members[0:2]
-            losers = discord_members[2:]
-            body = crud.adjust_elo(winners, losers, ctx.guild.id)
-        elif len(discord_members) == 6:
-            winners = discord_members[:3]
-            losers = discord_members[3:]
-            body = crud.adjust_elo(winners, losers, ctx.guild.id)
-        else:
-            await ctx.send(f'Error: Player count({len(discord_members)}) != 4 or 6')
+        header = [m.name for m in discord_members]
+        body = crud.adjust_elo(winners, losers, ctx.guild.id)
 
         res = table_output(header, body)
 
@@ -139,11 +140,16 @@ def run():
     @bot.command()
     @is_channel()
     async def reset(ctx, discord_member: discord.Member):
-        if ctx.author.guild_permissions.administrator:
-            crud.reset_elo_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
-            ctx.send('Player has been reset!')
-        else:
-            ctx.send('Error: You have to be admin to use this command!')
+        if not ctx.author.guild_permissions.administrator:
+            await ctx.send('Error: You have to be admin to use this command!')
+            return
+
+        if not crud.member_item_exists_by_member_id_and_server_id(discord_member.id, ctx.guild.id):
+            await ctx.send('Error: Player not found!')
+            return
+
+        crud.reset_elo_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
+        await ctx.send('Player has been reset!')
 
     bot.run(TOKEN)
 
