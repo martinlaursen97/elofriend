@@ -1,6 +1,6 @@
 from . import models, schemas
 from sqlalchemy import and_
-from .constants import StartConfig
+from .constants import StartConfig, TeamSize
 import src.elo_calc as calc
 
 
@@ -72,39 +72,50 @@ class Service:
         losers_win_prop = calc.win_prop(avg=losers_avg_elo, opponent_avg=winners_avg_elo)
 
         K = 20
+        team_size = len(winners)
 
         elo_change = []
 
         for w in winners:
             member = self.get_member_item_by_member_id_and_server_id(w.id, server_id)
-            change = self.adjust(member, K, winners_win_prop, win=True)
+            change = self.adjust(member, K, winners_win_prop, team_size=team_size, win=True)
             elo_change.append(change)
 
         for l in losers:
             member = self.get_member_item_by_member_id_and_server_id(l.id, server_id)
-            change = self.adjust(member, K, losers_win_prop, win=False)
+            change = self.adjust(member, K, losers_win_prop, team_size=team_size, win=False)
             elo_change.append(change)
 
         return [elo_change]
 
-    def adjust(self, member, K, win_prop, win=True):
-        old_elo = member.elo_2v2
-        new_elo = calc.new_elo(old_elo, K, win_prop, win=win)
-        member.elo_2v2 = new_elo
-        member.wins += 1
+    def adjust(self, member, K, win_prop, team_size, win=True):
+        if win:
+            member.wins += 1
+        else:
+            member.losses += 1
+
+        if team_size == TeamSize.TWO_VS_TWO:
+            old_elo = member.elo_2v2
+            new_elo = calc.new_elo(old_elo, K, win_prop, win=win)
+            member.elo_2v2 = new_elo
+        else:
+            old_elo = member.elo_3v3
+            new_elo = calc.new_elo(old_elo, K, win_prop, win=win)
+            member.elo_3v3 = new_elo
 
         self.db.commit()
         return f'{old_elo}>{new_elo}'
 
     def get_avg_elo(self, team, server_id):
         sum = 0
+        team_size = len(team)
         for i in team:
             item = self.get_member_item_by_member_id_and_server_id(i.id, server_id)
-            if len(team) == 2:
+            if team_size == TeamSize.TWO_VS_TWO:
                 sum += item.elo_2v2
-            elif len(team) == 3:
+            elif team_size == TeamSize.THREE_VS_THREE:
                 sum += item.elo_3v3
-        return sum / len(team)
+        return sum / team_size
 
     def reset_elo_by_member_id_and_server_id(self, member_id, server_id):
         member_item = self.get_member_item_by_member_id_and_server_id(member_id, server_id)

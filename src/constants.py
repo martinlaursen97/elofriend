@@ -10,3 +10,8 @@ class StartConfig(IntEnum):
 class PlayerAmount(IntEnum):
     TWO_VS_TWO = 4
     THREE_VS_THREE = 6
+
+
+class TeamSize(IntEnum):
+    TWO_VS_TWO = 2
+    THREE_VS_THREE = 4
