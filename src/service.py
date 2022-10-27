@@ -1,6 +1,7 @@
 from . import models, schemas
 from sqlalchemy import and_
 from .constants import StartConfig
+import src.elo_calc as calc
 
 
 class Service:
@@ -67,54 +68,33 @@ class Service:
         winners_avg_elo = self.get_avg_elo(winners, server_id)
         losers_avg_elo = self.get_avg_elo(losers, server_id)
 
-        winners_win_prop = 1 / (1 + 10 ** ((losers_avg_elo - winners_avg_elo) / 400))
-        losers_win_prop = 1 / (1 + 10 ** ((winners_avg_elo - losers_avg_elo) / 400))
+        winners_win_prop = calc.win_prop(avg=winners_avg_elo, opponent_avg=losers_avg_elo)
+        losers_win_prop = calc.win_prop(avg=losers_avg_elo, opponent_avg=winners_avg_elo)
 
-        K = 16
+        K = 20
 
         elo_change = []
 
         for w in winners:
             member = self.get_member_item_by_member_id_and_server_id(w.id, server_id)
-            old_elo = 0
-            new_elo = 0
-
-            if len(winners) == 2:
-                old_elo = member.elo_2v2
-                new_elo = int(old_elo + K * (1 - winners_win_prop))
-                member.elo_2v2 = new_elo
-
-            elif len(winners) == 3:
-                old_elo = member.elo_3v3
-                new_elo = int(old_elo + K * (1 - winners_win_prop))
-                member.elo_3v3 = new_elo
-
-            member.wins += 1
-            elo_change.append(f'{old_elo}>{new_elo}')
-
-            self.db.commit()
+            change = self.adjust(member, K, winners_win_prop, win=True)
+            elo_change.append(change)
 
         for l in losers:
             member = self.get_member_item_by_member_id_and_server_id(l.id, server_id)
-            old_elo = 0
-            new_elo = 0
-
-            if len(winners) == 2:
-                old_elo = member.elo_2v2
-                new_elo = int(old_elo + K * (0 - losers_win_prop))
-                member.elo_2v2 = new_elo
-
-            elif len(winners) == 3:
-                old_elo = member.elo_3v3
-                new_elo = int(old_elo + K * (0 - losers_win_prop))
-                member.elo_3v3 = new_elo
-
-            member.losses += 1
-            elo_change.append(f'{old_elo}>{new_elo}')
-
-            self.db.commit()
+            change = self.adjust(member, K, losers_win_prop, win=False)
+            elo_change.append(change)
 
         return [elo_change]
+
+    def adjust(self, member, K, win_prop, win=True):
+        old_elo = member.elo_2v2
+        new_elo = calc.new_elo(old_elo, K, win_prop, win=win)
+        member.elo_2v2 = new_elo
+        member.wins += 1
+
+        self.db.commit()
+        return f'{old_elo}>{new_elo}'
 
     def get_avg_elo(self, team, server_id):
         sum = 0
@@ -133,4 +113,3 @@ class Service:
         member_item.wins = StartConfig.STARTING_WINS
         member_item.losses = StartConfig.STARTING_LOSSES
         self.db.commit()
-
