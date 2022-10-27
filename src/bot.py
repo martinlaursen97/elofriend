@@ -136,6 +136,18 @@ def run():
         await ctx.send('Elo change:')
         await ctx.send(res)
 
+    @bot.command()
+    @is_channel()
+    async def reset(ctx, discord_member: discord.Member):
+        if ctx.author.guild_permissions.administrator:
+            crud.reset_elo_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
+        else:
+            ctx.send('Error: You have to be admin to use this command!')
+        print(ctx.author.guild_permissions.administrator)
+        print(discord_member)
+
+        pass
+
     bot.run(TOKEN)
 
 

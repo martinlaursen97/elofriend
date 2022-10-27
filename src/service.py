@@ -1,5 +1,6 @@
 from . import models, schemas
 from sqlalchemy import and_
+from .constants import StartConfig
 
 
 class Service:
@@ -124,3 +125,12 @@ class Service:
             elif len(team) == 3:
                 sum += item.elo_3v3
         return sum / len(team)
+
+    def reset_elo_by_member_id_and_server_id(self, member_id, server_id):
+        member_item = self.get_member_item_by_member_id_and_server_id(member_id, server_id)
+        member_item.elo_2v2 = StartConfig.STARTING_ELO.value
+        member_item.elo_3v3 = StartConfig.STARTING_ELO.value
+        member_item.wins = StartConfig.STARTING_WINS.value
+        member_item.losses = StartConfig.STARTING_LOSSES.value
+        self.db.commit()
+

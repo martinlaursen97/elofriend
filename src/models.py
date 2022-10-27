@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, BigInteger, ForeignKey
 from sqlalchemy.orm import relationship
 from .database import Base
+from .constants import StartConfig
 
 
 class Member(Base):
@@ -23,10 +24,10 @@ class MemberItem(Base):
     id = Column(BigInteger, primary_key=True, index=True)
     member_id = Column(BigInteger, ForeignKey('members.id'), nullable=False)
     server_id = Column(BigInteger, ForeignKey('servers.id'), nullable=False)
-    wins = Column(Integer, nullable=False, default=0)
-    losses = Column(Integer, nullable=False, default=0)
-    elo_2v2 = Column(Integer, nullable=False, default=1200)
-    elo_3v3 = Column(Integer, nullable=False, default=1200)
+    wins = Column(Integer, nullable=False, default=StartConfig.STARTING_WINS.value)
+    losses = Column(Integer, nullable=False, default=StartConfig.STARTING_LOSSES.value)
+    elo_2v2 = Column(Integer, nullable=False, default=StartConfig.STARTING_ELO.value)
+    elo_3v3 = Column(Integer, nullable=False, default=StartConfig.STARTING_ELO.value)
 
     author_member = relationship('Member', back_populates='items')
     author_server = relationship('Server', back_populates='items')
