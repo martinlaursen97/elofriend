@@ -39,7 +39,6 @@ def run():
     def is_channel():
         async def predicate(ctx):
             return ctx.channel.name == CHANNEL
-
         return commands.check(predicate)
 
     @bot.command()
@@ -87,23 +86,24 @@ def run():
             await ctx.send('Error: invalid argument')
             return
 
-        if member_items:
-            if arg == '2v2':
-                members = sorted(member_items, key=lambda t: t.elo_2v2, reverse=True)
-            else:
-                members = sorted(member_items, key=lambda t: t.elo_3v3, reverse=True)
-
-            header = ['Rank', 'Player', '2v2', '3v3', 'Wins', 'Losses']
-            body = []
-            for i, m in enumerate(members, start=1):
-                row = [i, await bot.fetch_user(m.member_id), m.elo_2v2, m.elo_3v3, m.wins, m.losses]
-                body.append(row)
-
-            res = table_output(header, body)
-
-            await ctx.send(res)
-        else:
+        if not member_items:
             await ctx.send('Error: No registered players!')
+            return
+
+        if arg == '2v2':
+            members = sorted(member_items, key=lambda t: t.elo_2v2, reverse=True)
+        else:
+            members = sorted(member_items, key=lambda t: t.elo_3v3, reverse=True)
+
+        header = ['Rank', 'Player', '2v2', '3v3', 'Wins', 'Losses']
+        body = []
+        for i, m in enumerate(members, start=1):
+            row = [i, await bot.fetch_user(m.member_id), m.elo_2v2, m.elo_3v3, m.wins, m.losses]
+            body.append(row)
+
+        res = table_output(header, body)
+
+        await ctx.send(res)
 
     @bot.command()
     @is_channel()
