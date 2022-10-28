@@ -110,6 +110,9 @@ def run():
     async def play(ctx, discord_members: commands.Greedy[discord.Member]):
         player_amount = len(discord_members)
 
+        if not discord_members:
+            await ctx.send('Error: Invalid argument!')
+
         if player_amount != len(set(discord_members)):
             await ctx.send('Error: Duplicate found!')
             return
@@ -123,7 +126,7 @@ def run():
         # Check if members are registered
         for i in discord_members:
             if not crud.member_item_exists_by_member_id_and_server_id(i.id, ctx.guild.id):
-                await ctx.send(f'{i.mention} is not registered!')
+                await ctx.send(f'Error: {i.mention} is not registered!')
                 return
 
         winners = discord_members[:int(player_amount / 2)]
