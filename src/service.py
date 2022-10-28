@@ -1,5 +1,5 @@
 from . import models, schemas
-from sqlalchemy import and_
+from sqlalchemy.sql import and_, exists
 from .constants import StartConfig, TeamSize
 import src.elo_calc as calc
 
@@ -50,13 +50,14 @@ class Service:
         return self.db.query(models.MemberItem).filter(models.MemberItem.server_id == server_id).all()
 
     def member_exists_by_id(self, id: int):
-        return self.get_member_by_id(id) is not None
+        return self.db.query(exists().where(models.Member.id == id)).scalar()
 
     def server_exists_by_id(self, id: int):
-        return self.get_server_by_id(id) is not None
+        return self.db.query(exists().where(models.Server.id == id)).scalar()
 
     def member_item_exists_by_member_id_and_server_id(self, member_id: int, server_id: int):
-        return self.get_member_item_by_member_id_and_server_id(member_id, server_id) is not None
+        return self.db.query(exists().where(and_(models.MemberItem.member_id == member_id,
+                                                 models.MemberItem.server_id == server_id))).scalar()
 
     def adjust_elo(self, winners, losers, server_id):
         winners_avg_elo = self.get_avg_elo(winners, server_id)
