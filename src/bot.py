@@ -112,6 +112,7 @@ def run():
 
         if not discord_members:
             await ctx.send('Error: Invalid argument!')
+            return
 
         if player_amount != len(set(discord_members)):
             await ctx.send('Error: Duplicate found!')
