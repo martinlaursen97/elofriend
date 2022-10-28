@@ -90,7 +90,7 @@ def run():
             await ctx.send('Error: No registered players!')
             return
 
-        if arg == '2v2':
+        if arg == GameTypeArg.TWO_VS_TWO:
             members = sorted(member_items, key=lambda t: t.elo_2v2, reverse=True)
         else:
             members = sorted(member_items, key=lambda t: t.elo_3v3, reverse=True)
