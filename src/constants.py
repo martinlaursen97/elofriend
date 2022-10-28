@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import IntEnum, Enum
 
 
 class StartConfig(IntEnum):
@@ -15,3 +15,8 @@ class PlayerAmount(IntEnum):
 class TeamSize(IntEnum):
     TWO_VS_TWO = 2
     THREE_VS_THREE = 3
+
+
+class GameTypeArg(Enum):
+    TWO_VS_TWO = '2v2'
+    THREE_VS_THREE = '3v3'

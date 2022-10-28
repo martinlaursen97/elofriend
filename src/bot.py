@@ -7,7 +7,7 @@ from src.schemas import MemberBase, ServerBase, MemberItemBase
 from src.service import Service
 from src.database import engine, get_db
 from src.models import Base
-from src.constants import PlayerAmount
+from src.constants import PlayerAmount, GameTypeArg
 
 from table2ascii import table2ascii as t2a, PresetStyle
 
@@ -75,13 +75,13 @@ def run():
 
             await ctx.send(res)
         else:
-            await ctx.send(f'Error: <@{discord_member.id}> is not registered!')
+            await ctx.send(f'Error: {discord_member.mention} is not registered!')
 
     @bot.command()
     @is_channel()
     async def ladder(ctx, arg):
         member_items = crud.get_member_items_by_server_id(ctx.guild.id)
-        valid = ['2v2', '3v3']
+        valid = [GameTypeArg.TWO_VS_TWO.value, GameTypeArg.THREE_VS_THREE.value]
         if arg not in valid:
             await ctx.send('Error: invalid argument')
             return
