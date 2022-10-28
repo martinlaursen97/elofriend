@@ -14,4 +14,4 @@ class PlayerAmount(IntEnum):
 
 class TeamSize(IntEnum):
     TWO_VS_TWO = 2
-    THREE_VS_THREE = 4
+    THREE_VS_THREE = 3
