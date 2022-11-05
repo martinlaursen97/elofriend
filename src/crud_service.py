@@ -4,37 +4,38 @@ from .constants import StartConfig, TeamSize
 import src.elo_calc as calc
 
 
-class Service:
+class CrudService:
     def __init__(self, db):
         self.db = db
 
     def create_member(self, member: schemas.MemberBase):
         db_member = models.Member(**member.dict())
-        if not self.member_exists_by_id(member.id):
-            self.db.add(db_member)
-            self.db.commit()
-            return f'Member: {member.id} registered'
-        else:
+
+        if self.member_exists_by_id(member.id):
             return f'Member: {member.id} already registered'
+
+        self.db.add(db_member)
+        self.db.commit()
+        return f'Member: {member.id} registered'
 
     def create_server(self, server: schemas.ServerBase):
         db_server = models.Server(**server.dict())
-        if not self.server_exists_by_id(server.id):
-            self.db.add(db_server)
-            self.db.commit()
-            return f'Server: {server.id} registered'
-        else:
+        if self.server_exists_by_id(server.id):
             return f'Server: {server.id} already registered'
+
+        self.db.add(db_server)
+        self.db.commit()
+        return f'Server: {server.id} registered'
 
     def create_member_item(self, member_item: schemas.MemberItemBase):
         db_member_item = models.MemberItem(**member_item.dict())
 
         if not self.member_item_exists_by_member_id_and_server_id(db_member_item.member_id, db_member_item.server_id):
-            self.db.add(db_member_item)
-            self.db.commit()
-            return f'<@{db_member_item.member_id}> successfully registered!'
-        else:
             return f'Error: <@{db_member_item.member_id}> already registered!'
+
+        self.db.add(db_member_item)
+        self.db.commit()
+        return f'<@{db_member_item.member_id}> successfully registered!'
 
     def get_member_by_id(self, id: int):
         return self.db.query(models.Member).filter(models.Member.id == id).first()
@@ -63,22 +64,22 @@ class Service:
         winners_avg_elo = self.get_avg_elo(winners, server_id)
         losers_avg_elo = self.get_avg_elo(losers, server_id)
 
-        winners_win_prop = calc.win_prop(avg=winners_avg_elo, opponent_avg=losers_avg_elo)
-        losers_win_prop = calc.win_prop(avg=losers_avg_elo, opponent_avg=winners_avg_elo)
+        winners_win_prob = calc.win_probability(avg=winners_avg_elo, opponent_avg=losers_avg_elo)
+        losers_win_prob = calc.win_probability(avg=losers_avg_elo, opponent_avg=winners_avg_elo)
 
         K = 20
         team_size = len(winners)
 
         elo_change = []
 
-        for w in winners:
-            member = self.get_member_item_by_member_id_and_server_id(w.id, server_id)
-            change = self.adjust(member, K, winners_win_prop, team_size=team_size, win=True)
+        for winner in winners:
+            member = self.get_member_item_by_member_id_and_server_id(winner.id, server_id)
+            change = self.adjust(member, K, winners_win_prob, team_size=team_size, win=True)
             elo_change.append(change)
 
-        for l in losers:
-            member = self.get_member_item_by_member_id_and_server_id(l.id, server_id)
-            change = self.adjust(member, K, losers_win_prop, team_size=team_size, win=False)
+        for loser in losers:
+            member = self.get_member_item_by_member_id_and_server_id(loser.id, server_id)
+            change = self.adjust(member, K, losers_win_prob, team_size=team_size, win=False)
             elo_change.append(change)
 
         return [elo_change]
@@ -104,8 +105,8 @@ class Service:
     def get_avg_elo(self, team, server_id):
         sum = 0
         team_size = len(team)
-        for i in team:
-            item = self.get_member_item_by_member_id_and_server_id(i.id, server_id)
+        for member in team:
+            item = self.get_member_item_by_member_id_and_server_id(member.id, server_id)
             if team_size == TeamSize.TWO_VS_TWO:
                 sum += item.elo_2v2
             elif team_size == TeamSize.THREE_VS_THREE:

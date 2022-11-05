@@ -1,17 +1,15 @@
+import os
+
 import discord
 from discord.ext import commands
-
 from dotenv import load_dotenv
-
-from src.schemas import MemberBase, ServerBase, MemberItemBase
-from src.service import Service
-from src.database import engine, get_db
-from src.models import Base
-from src.constants import PlayerAmount, GameType
-
 from table2ascii import table2ascii as t2a, PresetStyle
 
-import os
+from src.constants import PlayerAmount, GameType
+from src.crud_service import CrudService
+from src.database import engine, get_db
+from src.models import Base
+from src.schemas import MemberBase, ServerBase, MemberItemBase
 
 load_dotenv()
 Base.metadata.create_all(bind=engine)
@@ -25,8 +23,7 @@ def run():
     intents.messages = True
 
     bot = commands.Bot(command_prefix='!', intents=intents)
-
-    crud = Service(next(get_db()))
+    service = CrudService(next(get_db()))
 
     def table_output(header, body):
         output = t2a(
@@ -39,7 +36,6 @@ def run():
     def is_channel():
         async def predicate(ctx):
             return ctx.channel.name == CHANNEL
-
         return commands.check(predicate)
 
     @bot.command()
@@ -56,20 +52,20 @@ def run():
         member_item = MemberItemBase(member_id=member.id, server_id=server.id)
 
         # Will only be created if they don't already exist
-        crud.create_server(server)
-        crud.create_member(member)
+        service.create_server(server)
+        service.create_member(member)
 
-        res = crud.create_member_item(member_item)
+        res = service.create_member_item(member_item)
         await ctx.send(res)
 
     @bot.command()
     @is_channel()
     async def info(ctx, discord_member: discord.Member):
-        if not crud.member_item_exists_by_member_id_and_server_id(discord_member.id, ctx.guild.id):
+        if not service.member_item_exists_by_member_id_and_server_id(discord_member.id, ctx.guild.id):
             await ctx.send(f'Error: {discord_member.mention} is not registered!')
             return
 
-        member = crud.get_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
+        member = service.get_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
 
         header = ['Player', '2v2', '3v3', 'Wins', 'Losses']
         body = [[await bot.fetch_user(member.member_id),
@@ -82,7 +78,7 @@ def run():
     @bot.command()
     @is_channel()
     async def ladder(ctx, arg):
-        member_items = crud.get_member_items_by_server_id(ctx.guild.id)
+        member_items = service.get_member_items_by_server_id(ctx.guild.id)
         valid_args = [GameType.TWO_VS_TWO.value, GameType.THREE_VS_THREE.value]
 
         if arg not in valid_args:
@@ -130,7 +126,7 @@ def run():
 
         # Check if members are registered
         for member in discord_members:
-            if not crud.member_item_exists_by_member_id_and_server_id(member.id, ctx.guild.id):
+            if not service.member_item_exists_by_member_id_and_server_id(member.id, ctx.guild.id):
                 await ctx.send(f'Error: {member.mention} is not registered!')
                 return
 
@@ -138,7 +134,7 @@ def run():
         losers = discord_members[player_amount // 2:]
 
         header = [member.name for member in discord_members]
-        body = crud.adjust_elo(winners, losers, ctx.guild.id)
+        body = service.adjust_elo(winners, losers, ctx.guild.id)
 
         res = table_output(header, body)
 
@@ -152,11 +148,11 @@ def run():
             await ctx.send('Error: You have to be admin to use this command!')
             return
 
-        if not crud.member_item_exists_by_member_id_and_server_id(discord_member.id, ctx.guild.id):
+        if not service.member_item_exists_by_member_id_and_server_id(discord_member.id, ctx.guild.id):
             await ctx.send('Error: Player not found!')
             return
 
-        crud.reset_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
+        service.reset_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
         await ctx.send('Player has been reset!')
 
     @bot.event
