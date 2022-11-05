@@ -8,7 +8,7 @@ class CrudService:
     def __init__(self, db):
         self.db = db
 
-    def create_member(self, member: schemas.MemberBase):
+    def create_member(self, member: schemas.Member):
         db_member = models.Member(**member.dict())
 
         if self.member_exists_by_id(member.id):
@@ -18,7 +18,7 @@ class CrudService:
         self.db.commit()
         return f'Member: {member.id} registered'
 
-    def create_server(self, server: schemas.ServerBase):
+    def create_server(self, server: schemas.Server):
         db_server = models.Server(**server.dict())
         if self.server_exists_by_id(server.id):
             return f'Server: {server.id} already registered'
@@ -27,7 +27,7 @@ class CrudService:
         self.db.commit()
         return f'Server: {server.id} registered'
 
-    def create_member_item(self, member_item: schemas.MemberItemBase):
+    def create_member_item(self, member_item: schemas.MemberItem):
         db_member_item = models.MemberItem(**member_item.dict())
 
         if not self.member_item_exists_by_member_id_and_server_id(db_member_item.member_id, db_member_item.server_id):

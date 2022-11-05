@@ -1,14 +1,14 @@
 from pydantic import BaseModel
 
 
-class MemberBase(BaseModel):
+class Member(BaseModel):
     id: int
 
 
-class ServerBase(BaseModel):
+class Server(BaseModel):
     id: int
 
 
-class MemberItemBase(BaseModel):
+class MemberItem(BaseModel):
     member_id: int
     server_id: int

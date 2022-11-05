@@ -9,7 +9,7 @@ from src.constants import PlayerAmount, GameType
 from src.crud_service import CrudService
 from src.database import engine, get_db
 from src.models import Base
-from src.schemas import MemberBase, ServerBase, MemberItemBase
+from src.schemas import Member, Server, MemberItem
 
 load_dotenv()
 Base.metadata.create_all(bind=engine)
@@ -41,15 +41,15 @@ def run():
     @bot.command()
     @is_channel()
     async def register(ctx):
-        member = MemberBase(
+        member = Member(
             id=ctx.author.id
         )
 
-        server = ServerBase(
+        server = Server(
             id=ctx.guild.id
         )
 
-        member_item = MemberItemBase(member_id=member.id, server_id=server.id)
+        member_item = MemberItem(member_id=member.id, server_id=server.id)
 
         # Will only be created if they don't already exist
         service.create_server(server)
