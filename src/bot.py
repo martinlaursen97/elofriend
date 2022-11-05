@@ -159,6 +159,13 @@ def run():
         crud.reset_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
         await ctx.send('Player has been reset!')
 
+    @bot.event
+    @is_channel()
+    async def on_command_error(ctx, error):
+        if isinstance(error, discord.ext.commands.errors.MemberNotFound):
+            await ctx.send('Error: Invalid argument!')
+            return
+
     bot.run(TOKEN)
 
 
