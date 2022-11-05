@@ -148,7 +148,6 @@ def run():
     @bot.command()
     @is_channel()
     async def reset(ctx, discord_member: discord.Member):
-        print(discord_member)
         if not ctx.author.guild_permissions.administrator:
             await ctx.send('Error: You have to be admin to use this command!')
             return
