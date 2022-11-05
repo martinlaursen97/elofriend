@@ -82,7 +82,7 @@ def run():
         valid_args = [GameType.TWO_VS_TWO.value, GameType.THREE_VS_THREE.value]
 
         if arg not in valid_args:
-            await ctx.send('Error: invalid argument')
+            await ctx.send('Error: Invalid argument')
             return
 
         if not member_items:
