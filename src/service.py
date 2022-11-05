@@ -112,7 +112,7 @@ class Service:
                 sum += item.elo_3v3
         return sum / team_size
 
-    def reset_elo_by_member_id_and_server_id(self, member_id, server_id):
+    def reset_member_item_by_member_id_and_server_id(self, member_id, server_id):
         member_item = self.get_member_item_by_member_id_and_server_id(member_id, server_id)
         member_item.elo_2v2 = StartConfig.STARTING_ELO
         member_item.elo_3v3 = StartConfig.STARTING_ELO

@@ -7,7 +7,7 @@ from src.schemas import MemberBase, ServerBase, MemberItemBase
 from src.service import Service
 from src.database import engine, get_db
 from src.models import Base
-from src.constants import PlayerAmount, GameTypeArg
+from src.constants import PlayerAmount, GameType
 
 from table2ascii import table2ascii as t2a, PresetStyle
 
@@ -39,6 +39,7 @@ def run():
     def is_channel():
         async def predicate(ctx):
             return ctx.channel.name == CHANNEL
+
         return commands.check(predicate)
 
     @bot.command()
@@ -64,25 +65,27 @@ def run():
     @bot.command()
     @is_channel()
     async def info(ctx, discord_member: discord.Member):
-        if crud.member_item_exists_by_member_id_and_server_id(discord_member.id, ctx.guild.id):
-            member = crud.get_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
-
-            header = ['Player', '2v2', '3v3', 'Wins', 'Losses']
-            body = [[await bot.fetch_user(member.member_id),
-                     member.elo_2v2, member.elo_3v3, member.wins, member.losses]]
-
-            res = table_output(header, body)
-
-            await ctx.send(res)
-        else:
+        if not crud.member_item_exists_by_member_id_and_server_id(discord_member.id, ctx.guild.id):
             await ctx.send(f'Error: {discord_member.mention} is not registered!')
+            return
+
+        member = crud.get_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
+
+        header = ['Player', '2v2', '3v3', 'Wins', 'Losses']
+        body = [[await bot.fetch_user(member.member_id),
+                 member.elo_2v2, member.elo_3v3, member.wins, member.losses]]
+
+        res = table_output(header, body)
+
+        await ctx.send(res)
 
     @bot.command()
     @is_channel()
     async def ladder(ctx, arg):
         member_items = crud.get_member_items_by_server_id(ctx.guild.id)
-        valid = [GameTypeArg.TWO_VS_TWO.value, GameTypeArg.THREE_VS_THREE.value]
-        if arg not in valid:
+        valid_args = [GameType.TWO_VS_TWO.value, GameType.THREE_VS_THREE.value]
+
+        if arg not in valid_args:
             await ctx.send('Error: invalid argument')
             return
 
@@ -90,15 +93,16 @@ def run():
             await ctx.send('Error: No registered players!')
             return
 
-        if arg == GameTypeArg.TWO_VS_TWO.value:
-            members = sorted(member_items, key=lambda t: t.elo_2v2, reverse=True)
+        if arg == GameType.TWO_VS_TWO.value:
+            members = sorted(member_items, key=lambda member_item: member_item.elo_2v2, reverse=True)
         else:
-            members = sorted(member_items, key=lambda t: t.elo_3v3, reverse=True)
+            members = sorted(member_items, key=lambda member_item: member_item.elo_3v3, reverse=True)
 
         header = ['Rank', 'Player', '2v2', '3v3', 'Wins', 'Losses']
         body = []
-        for i, m in enumerate(members, start=1):
-            row = [i, await bot.fetch_user(m.member_id), m.elo_2v2, m.elo_3v3, m.wins, m.losses]
+        for index, member in enumerate(members, start=1):
+            row = [index, await bot.fetch_user(member.member_id), member.elo_2v2, member.elo_3v3, member.wins,
+                   member.losses]
             body.append(row)
 
         res = table_output(header, body)
@@ -108,32 +112,32 @@ def run():
     @bot.command()
     @is_channel()
     async def play(ctx, discord_members: commands.Greedy[discord.Member]):
-        player_amount = len(discord_members)
-
         if not discord_members:
             await ctx.send('Error: Invalid argument!')
             return
+
+        player_amount = len(discord_members)
 
         if player_amount != len(set(discord_members)):
             await ctx.send('Error: Duplicate found!')
             return
 
-        valid_lengths = [PlayerAmount.TWO_VS_TWO, PlayerAmount.THREE_VS_THREE]
-        if player_amount not in valid_lengths:
+        valid_player_amounts = [PlayerAmount.TWO_VS_TWO, PlayerAmount.THREE_VS_THREE]
+        if player_amount not in valid_player_amounts:
             await ctx.send(f'Error: Invalid played amount ({player_amount}). '
-                           f'Valid amounts are: {[i.value for i in valid_lengths]}')
+                           f'Valid amounts are: {[amount.value for amount in valid_player_amounts]}')
             return
 
         # Check if members are registered
-        for i in discord_members:
-            if not crud.member_item_exists_by_member_id_and_server_id(i.id, ctx.guild.id):
-                await ctx.send(f'Error: {i.mention} is not registered!')
+        for member in discord_members:
+            if not crud.member_item_exists_by_member_id_and_server_id(member.id, ctx.guild.id):
+                await ctx.send(f'Error: {member.mention} is not registered!')
                 return
 
-        winners = discord_members[:int(player_amount / 2)]
-        losers = discord_members[int(player_amount / 2):]
+        winners = discord_members[:player_amount // 2]
+        losers = discord_members[player_amount // 2:]
 
-        header = [m.name for m in discord_members]
+        header = [member.name for member in discord_members]
         body = crud.adjust_elo(winners, losers, ctx.guild.id)
 
         res = table_output(header, body)
@@ -144,6 +148,7 @@ def run():
     @bot.command()
     @is_channel()
     async def reset(ctx, discord_member: discord.Member):
+        print(discord_member)
         if not ctx.author.guild_permissions.administrator:
             await ctx.send('Error: You have to be admin to use this command!')
             return
@@ -152,7 +157,7 @@ def run():
             await ctx.send('Error: Player not found!')
             return
 
-        crud.reset_elo_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
+        crud.reset_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
         await ctx.send('Player has been reset!')
 
     bot.run(TOKEN)

@@ -17,6 +17,6 @@ class TeamSize(IntEnum):
     THREE_VS_THREE = 3
 
 
-class GameTypeArg(Enum):
+class GameType(Enum):
     TWO_VS_TWO = '2v2'
     THREE_VS_THREE = '3v3'
