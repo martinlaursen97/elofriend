@@ -138,8 +138,7 @@ def run():
 
         res = table_output(header, body)
 
-        await ctx.send('Elo change:')
-        await ctx.send(res)
+        await ctx.send(f'Elo change:\n{res}')
 
     @bot.command()
     @is_channel()
