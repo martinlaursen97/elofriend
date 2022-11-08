@@ -94,11 +94,11 @@ def run():
         else:
             members = sorted(member_items, key=lambda member_item: member_item.elo_3v3, reverse=True)
 
-        header = ['Rank', 'Player', '2v2', '3v3', 'Wins', 'Losses']
+        header = ['Rank', 'Player', '2v2', '3v3', 'W/L']
         body = []
         for index, member in enumerate(members, start=1):
-            row = [index, await bot.fetch_user(member.member_id), member.elo_2v2, member.elo_3v3, member.wins,
-                   member.losses]
+            row = [index, await bot.fetch_user(member.member_id), member.elo_2v2, member.elo_3v3,
+                   f'{member.wins}/{member.losses}']
             body.append(row)
 
         res = table_output(header, body)
