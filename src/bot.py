@@ -5,11 +5,11 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from table2ascii import table2ascii as t2a, PresetStyle
 
-from src.constants import PlayerAmount, GameType
 from src.crud_service import CrudService
 from src.database import engine, get_db
 from src.models import Base
 from src.schemas import Member, Server, MemberItem
+from src.util import *
 
 load_dotenv()
 Base.metadata.create_all(bind=engine)
@@ -49,7 +49,10 @@ def run():
             id=ctx.guild.id
         )
 
-        member_item = MemberItem(member_id=member.id, server_id=server.id)
+        member_item = MemberItem(
+            member_id=member.id,
+            server_id=server.id
+        )
 
         # Will only be created if they don't already exist
         service.create_server(server)
@@ -67,9 +70,10 @@ def run():
 
         member = service.get_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
 
-        header = ['Player', '2v2', '3v3', 'Wins', 'Losses']
-        body = [[await bot.fetch_user(member.member_id),
-                 member.elo_2v2, member.elo_3v3, member.wins, member.losses]]
+        header = ['Player', '2v2', 'W/L', '3v3', 'W/L']
+        body = [[discord_member.display_name,
+                 member.elo_2v2, f'{member.wins_2v2}/{member.losses_2v2}',
+                 member.elo_3v3, f'{member.wins_3v3}/{member.losses_3v3}']]
 
         res = table_output(header, body)
 
@@ -82,7 +86,7 @@ def run():
         valid_args = [GameType.TWO_VS_TWO.value, GameType.THREE_VS_THREE.value]
 
         if arg not in valid_args:
-            await ctx.send('Error: Invalid argument')
+            await ctx.send('Error: Invalid argument!')
             return
 
         if not member_items:
@@ -94,11 +98,15 @@ def run():
         else:
             members = sorted(member_items, key=lambda member_item: member_item.elo_3v3, reverse=True)
 
-        header = ['Rank', 'Player', '2v2', '3v3', 'W/L']
+        header = ['Rank', 'Player', arg, 'W/L']
+
         body = []
         for index, member in enumerate(members, start=1):
-            row = [index, await bot.fetch_user(member.member_id), member.elo_2v2, member.elo_3v3,
-                   f'{member.wins}/{member.losses}']
+            user = await bot.fetch_user(member.member_id)
+
+            elo, wins, losses = member.get_info_by_game_type(arg)
+
+            row = [index, user.display_name, elo, f'{wins}/{losses}']
             body.append(row)
 
         res = table_output(header, body)
@@ -134,7 +142,7 @@ def run():
         losers = discord_members[player_amount // 2:]
 
         header = [member.name for member in discord_members]
-        body = service.adjust_elo(winners, losers, ctx.guild.id)
+        body = service.adjust_elo(winners, losers, get_game_type_by_player_amount(player_amount), ctx.guild.id)
 
         res = table_output(header, body)
 
