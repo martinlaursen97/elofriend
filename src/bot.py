@@ -115,7 +115,7 @@ def run():
 
     @bot.command()
     @is_channel()
-    async def play(ctx, discord_members: commands.Greedy[discord.Member]):
+    async def match(ctx, discord_members: commands.Greedy[discord.Member]):
         if not discord_members:
             await ctx.send('Error: Invalid argument!')
             return
