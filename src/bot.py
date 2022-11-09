@@ -73,7 +73,7 @@ def run():
         member = service.get_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
 
         header = ['Player', '1v1', 'W/L', '2v2', 'W/L', '3v3', 'W/L']
-        body = [[discord_member.display_name,
+        body = [[discord_member.name,
                  member.elo_1v1, f'{member.wins_1v1}/{member.losses_1v1}',
                  member.elo_2v2, f'{member.wins_2v2}/{member.losses_2v2}',
                  member.elo_3v3, f'{member.wins_3v3}/{member.losses_3v3}']]
