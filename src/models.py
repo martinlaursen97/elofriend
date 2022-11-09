@@ -24,10 +24,13 @@ class MemberItem(Base):
     id = Column(BigInteger, primary_key=True, index=True)
     member_id = Column(BigInteger, ForeignKey('members.id'), nullable=False)
     server_id = Column(BigInteger, ForeignKey('servers.id'), nullable=False)
+    wins_1v1 = Column(Integer, nullable=False, default=StartConfig.STARTING_WINS)
     wins_2v2 = Column(Integer, nullable=False, default=StartConfig.STARTING_WINS)
     wins_3v3 = Column(Integer, nullable=False, default=StartConfig.STARTING_WINS)
+    losses_1v1 = Column(Integer, nullable=False, default=StartConfig.STARTING_LOSSES)
     losses_2v2 = Column(Integer, nullable=False, default=StartConfig.STARTING_LOSSES)
     losses_3v3 = Column(Integer, nullable=False, default=StartConfig.STARTING_LOSSES)
+    elo_1v1 = Column(Integer, nullable=False, default=StartConfig.STARTING_ELO)
     elo_2v2 = Column(Integer, nullable=False, default=StartConfig.STARTING_ELO)
     elo_3v3 = Column(Integer, nullable=False, default=StartConfig.STARTING_ELO)
 
@@ -35,6 +38,9 @@ class MemberItem(Base):
     author_server = relationship('Server', back_populates='items')
 
     def get_info_by_game_type(self, game_type):
+        if game_type == GameType.ONE_VS_ONE.value:
+            return self.elo_1v1, self.wins_1v1, self.losses_1v1
         if game_type == GameType.TWO_VS_TWO.value:
             return self.elo_2v2, self.wins_2v2, self.losses_2v2
-        return self.elo_3v3, self.wins_3v3, self.losses_3v3
+        if game_type == GameType.THREE_VS_THREE.value:
+            return self.elo_3v3, self.wins_3v3, self.losses_3v3

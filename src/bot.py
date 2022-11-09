@@ -36,11 +36,13 @@ def run():
     def is_channel():
         async def predicate(ctx):
             return ctx.channel.name == CHANNEL
+
         return commands.check(predicate)
 
     @bot.command()
     @is_channel()
     async def register(ctx):
+
         member = Member(
             id=ctx.author.id
         )
@@ -70,8 +72,9 @@ def run():
 
         member = service.get_member_item_by_member_id_and_server_id(discord_member.id, ctx.guild.id)
 
-        header = ['Player', '2v2', 'W/L', '3v3', 'W/L']
+        header = ['Player', '1v1', 'W/L', '2v2', 'W/L', '3v3', 'W/L']
         body = [[discord_member.display_name,
+                 member.elo_1v1, f'{member.wins_1v1}/{member.losses_1v1}',
                  member.elo_2v2, f'{member.wins_2v2}/{member.losses_2v2}',
                  member.elo_3v3, f'{member.wins_3v3}/{member.losses_3v3}']]
 
@@ -83,7 +86,7 @@ def run():
     @is_channel()
     async def ladder(ctx, arg):
         member_items = service.get_member_items_by_server_id(ctx.guild.id)
-        valid_args = [GameType.TWO_VS_TWO.value, GameType.THREE_VS_THREE.value]
+        valid_args = [GameType.ONE_VS_ONE.value, GameType.TWO_VS_TWO.value, GameType.THREE_VS_THREE.value]
 
         if arg not in valid_args:
             await ctx.send('Error: Invalid argument!')
@@ -93,10 +96,7 @@ def run():
             await ctx.send('Error: No registered players!')
             return
 
-        if arg == GameType.TWO_VS_TWO.value:
-            members = sorted(member_items, key=lambda member_item: member_item.elo_2v2, reverse=True)
-        else:
-            members = sorted(member_items, key=lambda member_item: member_item.elo_3v3, reverse=True)
+        members = sort_member_items_by_game_type(member_items, arg)
 
         header = ['Rank', 'Player', arg, 'W/L']
 
@@ -126,7 +126,7 @@ def run():
             await ctx.send('Error: Duplicate found!')
             return
 
-        valid_player_amounts = [PlayerAmount.TWO_VS_TWO, PlayerAmount.THREE_VS_THREE]
+        valid_player_amounts = [PlayerAmount.ONE_VS_ONE, PlayerAmount.TWO_VS_TWO, PlayerAmount.THREE_VS_THREE]
         if player_amount not in valid_player_amounts:
             await ctx.send(f'Error: Invalid played amount ({player_amount}). '
                            f'Valid amounts are: {[amount.value for amount in valid_player_amounts]}')

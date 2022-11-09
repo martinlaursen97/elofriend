@@ -84,13 +84,30 @@ class CrudService:
         return [elo_change]
 
     def adjust(self, member, K, win_prop, game_type, win=True):
-        if game_type == GameType.TWO_VS_TWO:
-            member.wins_2v2 += 1
+        if game_type == GameType.ONE_VS_ONE:
+            if win:
+                member.wins_1v1 += 1
+            else:
+                member.losses_1v1 += 1
+
+            old_elo = member.elo_1v1
+            new_elo = calc.new_elo(old_elo, K, win_prop, win=win)
+            member.elo_1v1 = new_elo
+        elif game_type == GameType.TWO_VS_TWO:
+            if win:
+                member.wins_2v2 += 1
+            else:
+                member.losses_2v2 += 1
+
             old_elo = member.elo_2v2
             new_elo = calc.new_elo(old_elo, K, win_prop, win=win)
             member.elo_2v2 = new_elo
         else:
-            member.wins_3v3 += 1
+            if win:
+                member.wins_3v3 += 1
+            else:
+                member.losses_3v3 += 1
+
             old_elo = member.elo_3v3
             new_elo = calc.new_elo(old_elo, K, win_prop, win=win)
             member.elo_3v3 = new_elo
@@ -99,21 +116,26 @@ class CrudService:
         return f'{old_elo}>{new_elo}'
 
     def get_avg_elo(self, team, server_id, game_type):
-        sum = 0
+        elo_sum = 0
         for member in team:
             item = self.get_member_item_by_member_id_and_server_id(member.id, server_id)
-            if game_type == GameType.TWO_VS_TWO:
-                sum += item.elo_2v2
-            elif game_type == GameType.THREE_VS_THREE:
-                sum += item.elo_3v3
-        return sum / len(team)
+            if game_type == GameType.ONE_VS_ONE:
+                elo_sum += item.elo_1v1
+            elif game_type == GameType.TWO_VS_TWO:
+                elo_sum += item.elo_2v2
+            else:
+                elo_sum += item.elo_3v3
+        return elo_sum / len(team)
 
     def reset_member_item_by_member_id_and_server_id(self, member_id, server_id):
         member_item = self.get_member_item_by_member_id_and_server_id(member_id, server_id)
+        member_item.elo_1v1 = StartConfig.STARTING_ELO
         member_item.elo_2v2 = StartConfig.STARTING_ELO
         member_item.elo_3v3 = StartConfig.STARTING_ELO
+        member_item.wins_1v1 = StartConfig.STARTING_WINS
         member_item.wins_2v2 = StartConfig.STARTING_WINS
-        member_item.losses_2v2 = StartConfig.STARTING_LOSSES
         member_item.wins_3v3 = StartConfig.STARTING_WINS
+        member_item.losses_1v1 = StartConfig.STARTING_LOSSES
+        member_item.losses_2v2 = StartConfig.STARTING_LOSSES
         member_item.losses_3v3 = StartConfig.STARTING_LOSSES
         self.db.commit()

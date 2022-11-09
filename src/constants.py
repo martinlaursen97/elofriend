@@ -8,10 +8,12 @@ class StartConfig(IntEnum):
 
 
 class PlayerAmount(IntEnum):
+    ONE_VS_ONE = 2
     TWO_VS_TWO = 4
     THREE_VS_THREE = 6
 
 
 class GameType(Enum):
+    ONE_VS_ONE = '1v1'
     TWO_VS_TWO = '2v2'
     THREE_VS_THREE = '3v3'
