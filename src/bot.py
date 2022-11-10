@@ -137,7 +137,7 @@ def run():
         # Confirm match
         CHECK_EMOJI = '✅'
 
-        message = await ctx.send(f'Confirm the match {CHECK_EMOJI}:\n```'
+        message = await ctx.send(f'Confirm the match {CHECK_EMOJI}\n```'
                                  f'Winners : {", ".join([winner.name for winner in winners])}\n'
                                  f'Losers  : {", ".join([loser.name for loser in losers])}\n'
                                  f'```')
@@ -155,7 +155,7 @@ def run():
 
             res = table_output(header, body)
 
-            await ctx.send(f'Confirmed!\nElo change:\n{res}')
+            await ctx.send(f'Elo has been updated:\n{res}')
         except asyncio.TimeoutError:
             await ctx.send('TimeOutError: No changes were made.')
 
