@@ -25,14 +25,6 @@ def run():
     bot = commands.Bot(command_prefix='!', intents=intents)
     service = CrudService(next(get_db()))
 
-    def table_output(header, body):
-        output = t2a(
-            header=header,
-            body=body,
-            style=PresetStyle.thin_compact
-        )
-        return f"```\n{output}\n```"
-
     def is_channel():
         async def predicate(ctx):
             return ctx.channel.name == CHANNEL

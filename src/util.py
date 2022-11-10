@@ -1,4 +1,14 @@
 from .constants import PlayerAmount, GameType
+from table2ascii import table2ascii as t2a, PresetStyle
+
+
+def table_output(header, body):
+    output = t2a(
+        header=header,
+        body=body,
+        style=PresetStyle.thin_compact
+    )
+    return f"```\n{output}\n```"
 
 
 def get_game_type_by_player_amount(player_amount):
