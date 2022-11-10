@@ -137,9 +137,10 @@ def run():
         # Confirm match
         CHECK_EMOJI = '✅'
 
-        message = await ctx.send(f'```Confirm the match:\n'
+        message = await ctx.send(f'Confirm the match {CHECK_EMOJI}:\n```'
                                  f'Winners : {", ".join([winner.name for winner in winners])}\n'
-                                 f'Losers  : {", ".join([loser.name for loser in losers])}\n```')
+                                 f'Losers  : {", ".join([loser.name for loser in losers])}\n'
+                                 f'```')
         await message.add_reaction(CHECK_EMOJI)
 
         try:
