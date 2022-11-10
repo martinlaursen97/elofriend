@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 import discord
@@ -133,12 +134,29 @@ def run():
         winners = discord_members[:player_amount // 2]
         losers = discord_members[player_amount // 2:]
 
-        header = [member.name for member in discord_members]
-        body = service.adjust_elo(winners, losers, get_game_type_by_player_amount(player_amount), ctx.guild.id)
+        # Confirm match
+        CHECK_EMOJI = '✅'
 
-        res = table_output(header, body)
+        message = await ctx.send(f'```Confirm the match:\n'
+                                 f'Winners : {", ".join([winner.name for winner in winners])}\n'
+                                 f'Losers  : {", ".join([loser.name for loser in losers])}\n```')
+        await message.add_reaction(CHECK_EMOJI)
 
-        await ctx.send(f'Elo change:\n{res}')
+        try:
+            def check(reaction, user):
+                return user == ctx.author and str(reaction.emoji) == CHECK_EMOJI
+
+            reaction, user = await bot.wait_for('reaction_add', check=check, timeout=30)
+
+            # If reacted, setup table response
+            header = [member.name for member in discord_members]
+            body = service.adjust_elo(winners, losers, get_game_type_by_player_amount(player_amount), ctx.guild.id)
+
+            res = table_output(header, body)
+
+            await ctx.send(f'Confirmed!\nElo change:\n{res}')
+        except asyncio.TimeoutError:
+            await ctx.send('TimeOutError: No changes were made.')
 
     @bot.command()
     @is_channel()

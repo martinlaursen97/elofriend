@@ -8,7 +8,7 @@ def table_output(header, body):
         body=body,
         style=PresetStyle.thin_compact
     )
-    return f"```\n{output}\n```"
+    return f'```\n{output}\n```'
 
 
 def get_game_type_by_player_amount(player_amount):
