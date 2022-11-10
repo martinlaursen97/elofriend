@@ -4,7 +4,6 @@ import os
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-from table2ascii import table2ascii as t2a, PresetStyle
 
 from src.crud_service import CrudService
 from src.database import engine, get_db
