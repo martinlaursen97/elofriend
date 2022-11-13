@@ -77,12 +77,13 @@ def run():
     @bot.command()
     @is_channel()
     async def ladder(ctx, arg):
-        member_items = service.get_member_items_by_server_id(ctx.guild.id)
         valid_args = [GameType.ONE_VS_ONE.value, GameType.TWO_VS_TWO.value, GameType.THREE_VS_THREE.value]
 
         if arg not in valid_args:
             await ctx.send('Error: Invalid argument!')
             return
+
+        member_items = service.get_member_items_by_server_id(ctx.guild.id)
 
         if not member_items:
             await ctx.send('Error: No registered players!')
